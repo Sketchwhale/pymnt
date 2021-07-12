@@ -65,15 +65,17 @@ class PymntTest {
 		assertEquals(-20, pymnt.getBalanceByUser(User.PETER));
 
 		List<Payment> solution = pymnt.getSettlementSolution();
-		for (Payment p : solution)
+		assertEquals(solution.size(), 2);
+		for (Payment p : solution) {
 			System.out.println(p.toString());
-		assertEquals(solution.size(), 4);
-
-		for (Payment payment : solution) {
-			if (payment.getFrom() == User.JOHN)
-				assertEquals(payment.getAmount(), 15.0);
-			if (payment.getFrom() == User.PETER)
-				assertEquals(payment.getAmount(), 10.0);
+			if (p.getFrom() == User.JOHN) {
+				assertEquals(p.getTo(), User.MARY);
+				assertEquals(p.getAmount(), 30.0);
+			}
+			if (p.getFrom() == User.PETER) {
+				assertEquals(p.getTo(), User.MARY);
+				assertEquals(p.getAmount(), 20.0);
+			}
 		}
 
 	}

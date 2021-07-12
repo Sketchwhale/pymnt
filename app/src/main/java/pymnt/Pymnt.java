@@ -76,31 +76,49 @@ public class Pymnt {
 
 		List<Payment> solution = new ArrayList<>();
 
-		double johnBalance = getBalanceByUser(User.JOHN);
-		List<Payment> johnPayments = new ArrayList<>();
-		if (johnBalance < 0) {
-			double amount = (johnBalance * (- 1))/2;
-			solution.add(new Payment(User.JOHN, User.MARY, amount));
-			solution.add(new Payment(User.JOHN, User.PETER, amount));
-		}
+		List<User> users = new ArrayList<>();
+		users.add(User.JOHN);
+		users.add(User.MARY);
+		users.add(User.PETER);
 
-		double maryBalance = getBalanceByUser(User.MARY);
-		List<Payment> maryPayments = new ArrayList<>();
-		if (maryBalance < 0) {
-			double amount = (maryBalance * (- 1))/2;
-			solution.add(new Payment(User.MARY, User.JOHN, amount));
-			solution.add(new Payment(User.MARY, User.PETER, amount));
-		}
+		Map<User, Double> balances = new EnumMap<>(User.class);
+		for (User user : users)
+			balances.put(user, getBalanceByUser(user));
 
-		double peterBalance = getBalanceByUser(User.PETER);
-		List<Payment> peterPayments = new ArrayList<>();
-		if (peterBalance < 0) {
-			double amount = (peterBalance * (- 1))/2;
-			solution.add(new Payment(User.PETER, User.MARY, amount));
-			solution.add(new Payment(User.PETER, User.JOHN, amount));
-		}
+		Map<User, Boolean> debts = new EnumMap<>(User.class);
+		for (User user : users)
+			debts.put(user, getBalanceByUser(user) < 0.0);
+			
+		Map<User, Boolean> settled = new EnumMap<>(User.class);
+		for (User user : users)
+			settled.put(user, false);
 
+		for (User user : users) {
+
+			if (debts.get(user)) {
+
+				double balanceAbs = balances.get(user) * (-1);
+
+				for (User other : users) {
+					if (user != other) {
+						if (!settled.get(other)) {
+							if (!debts.get(other)) {
+								if( balanceAbs <=  balances.get(other)) {
+									solution.add(new Payment(user, other, balanceAbs));
+									balances.put(user, balances.get(user) + balanceAbs);
+								} else {
+									solution.add(new Payment(user, other, balanceAbs - balances.get(other)));
+									balances.put(user, balanceAbs - balances.get(other));
+									balances.put(other, balanceAbs - balances.get(other));
+								}
+							}
+						}
+					} 
+				}
+				debts.put(user, false);
+				settled.put(user, true);
+			}
+		}
 		return solution;
-
 	}
 }
